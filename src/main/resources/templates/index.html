@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Collector</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Join Our Newsletter</h1>
+        <p>Stay updated with our latest news and offers!</p>
+        
+        <div th:if="${duplicateError}" class="error-message" style="color: #e74c3c; margin-bottom: 15px; text-align: center;">
+            <p th:text="${duplicateError}">Error message</p>
+        </div>
+        
+        <form th:action="@{/submit}" th:object="${emailSubmission}" method="post">
+            <div class="form-group">
+                <label for="email">Email address:</label>
+                <input type="text" th:field="*{email}" id="email" class="form-control" placeholder="Enter your email">
+                <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></span>
+            </div>
+            
+            <button type="submit" class="btn">Subscribe</button>
+        </form>
+    </div>
+    
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>
