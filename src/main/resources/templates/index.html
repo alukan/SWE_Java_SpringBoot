@@ -14,7 +14,7 @@
         <div th:if="${duplicateError}" class="error-message" style="color: #e74c3c; margin-bottom: 15px; text-align: center;">
             <p th:text="${duplicateError}">Error message</p>
         </div>
-        
+
         <form th:action="@{/submit}" th:object="${emailSubmission}" method="post">
             <div class="form-group">
                 <label for="email">Email address:</label>
@@ -24,6 +24,10 @@
             
             <button type="submit" class="btn">Subscribe</button>
         </form>
+    </div>
+
+    <div class="button-container">
+        <a th:href="@{/emails}" class="btn secondary-btn">View All Submissions</a>
     </div>
     
     <script th:src="@{/js/main.js}"></script>

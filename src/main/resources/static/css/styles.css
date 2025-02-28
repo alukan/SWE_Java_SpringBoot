@@ -82,3 +82,24 @@ label {
 .success-container p {
     margin-bottom: 20px;
 }
+
+.button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.primary-btn {
+    background-color: #3498db;
+}
+
+.secondary-btn {
+    background-color: #7f8c8d;
+    display: inline-block;
+    width: auto;
+    padding: 10px 20px;
+    margin: 0 auto;
+}
+
+.secondary-btn:hover {
+    background-color: #6c7a7a;
+}
