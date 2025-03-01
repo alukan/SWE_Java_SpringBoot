@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.emailcollector.landing.EmailRepository;
 import com.emailcollector.landing.EmailSubmission;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,5 +55,11 @@ public class EmailRestController {
         response.put("success", true);
         response.put("message", "Email registered successfully");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/emails")
+    public ResponseEntity<List<EmailSubmission>> getAllEmails() {
+        List<EmailSubmission> emails = emailRepository.findAll();
+        return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 }
