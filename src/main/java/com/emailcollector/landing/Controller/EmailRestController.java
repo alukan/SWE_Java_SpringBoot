@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.emailcollector.landing.EmailRepository;
+import com.emailcollector.landing.EmailService;
 import com.emailcollector.landing.EmailSubmission;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class EmailRestController {
 
     @Autowired
-    private EmailRepository emailRepository;
+    private EmailService emailService;
     
     @PostMapping("/email")
     public ResponseEntity<?> addEmail(@Valid @RequestBody EmailSubmission emailSubmission, 
@@ -39,18 +39,14 @@ public class EmailRestController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         
-        if (emailRepository.findByEmail(emailSubmission.getEmail()).isPresent()) {
+        if (emailService.emailExists(emailSubmission.getEmail())) {
             response.put("success", false);
             response.put("error", "Email already registered");
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
         
-        String ipAddress = request.getRemoteAddr();
-        emailSubmission.setIpAddress(ipAddress);
-        emailSubmission.setCreationDate(System.currentTimeMillis());
-        emailSubmission.setSource(EmailSubmission.SubmissionSource.API);
-        
-        emailRepository.save(emailSubmission);
+        emailService.processSubmission(emailSubmission, request, 
+                                     EmailSubmission.SubmissionSource.API);
         
         response.put("success", true);
         response.put("message", "Email registered successfully");
@@ -59,7 +55,7 @@ public class EmailRestController {
 
     @GetMapping("/emails")
     public ResponseEntity<List<EmailSubmission>> getAllEmails() {
-        List<EmailSubmission> emails = emailRepository.findAll();
+        List<EmailSubmission> emails = emailService.getAllEmails();
         return new ResponseEntity<>(emails, HttpStatus.OK);
     }
 }
