@@ -40,6 +40,7 @@ public class EmailController {
         String ipAddress = request.getRemoteAddr();
         emailSubmission.setIpAddress(ipAddress);
         emailSubmission.setCreationDate(System.currentTimeMillis());
+        emailSubmission.setSource(EmailSubmission.SubmissionSource.LANDING_PAGE);
 
         emailRepository.save(emailSubmission);
         return "success";

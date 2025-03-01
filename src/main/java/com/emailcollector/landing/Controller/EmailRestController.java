@@ -48,7 +48,7 @@ public class EmailRestController {
         String ipAddress = request.getRemoteAddr();
         emailSubmission.setIpAddress(ipAddress);
         emailSubmission.setCreationDate(System.currentTimeMillis());
-        emailSubmission.setSource("API");
+        emailSubmission.setSource(EmailSubmission.SubmissionSource.API);
         
         emailRepository.save(emailSubmission);
         

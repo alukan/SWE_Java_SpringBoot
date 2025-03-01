@@ -59,8 +59,8 @@
                     <td th:text="${email.email}">user@example.com</td>
                     <td th:text="${email.formattedDate}">2023-01-01</td>
                     <td th:text="${email.ipAddress}">127.0.0.1</td>
-                    <td th:class="${email.source == 'API'} ? 'api-source' : 'landing-source'" 
-                        th:text="${email.source}">landing</td>
+                    <td th:class="${email.source.name() == 'API'} ? 'api-source' : 'landing-source'" 
+                        th:text="${email.source.name()}">LANDING_PAGE</td>
                 </tr>
             </tbody>
         </table>
