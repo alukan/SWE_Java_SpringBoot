@@ -19,7 +19,14 @@ public class EmailSubmission {
     
     private String ipAddress;
     
+    private SubmissionSource source = SubmissionSource.LANDING_PAGE;
+    
     public Date getFormattedDate() {
         return new Date(creationDate);
+    }
+    
+    public enum SubmissionSource {
+        LANDING_PAGE,
+        API
     }
 }

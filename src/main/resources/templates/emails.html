@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Submissions</title>
+    <title>Registered Email Addresses</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
         table {
@@ -12,12 +12,13 @@
             margin-top: 20px;
         }
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
         tr:hover {
             background-color: #f5f5f5;
@@ -27,11 +28,17 @@
             padding: 20px;
             color: #777;
         }
+        .api-source {
+            color: #2980b9;
+        }
+        .landing-source {
+            color: #27ae60;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Email Submissions</h1>
+        <h1>Registered Email Addresses</h1>
         <p>Total submissions: <span th:text="${totalCount}">0</span></p>
         
         <div th:if="${emails.empty}">
@@ -44,18 +51,21 @@
                     <th>Email</th>
                     <th>Submission Date</th>
                     <th>IP Address</th>
+                    <th>Source</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="email : ${emails}">
-                    <td th:text="${email.email}">sample@example.com</td>
-                    <td th:text="${email.formattedDate}">2025-01-01 00:00:00</td>
+                    <td th:text="${email.email}">user@example.com</td>
+                    <td th:text="${email.formattedDate}">2023-01-01</td>
                     <td th:text="${email.ipAddress}">127.0.0.1</td>
+                    <td th:class="${email.source.name() == 'API'} ? 'api-source' : 'landing-source'" 
+                        th:text="${email.source.name()}">LANDING_PAGE</td>
                 </tr>
             </tbody>
         </table>
         
-        <div style="margin-top: 20px;">
+        <div class="back-link" style="margin-top: 20px;">
             <a th:href="@{/}" class="btn">Back to Home</a>
         </div>
     </div>
