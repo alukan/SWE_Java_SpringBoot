@@ -19,6 +19,8 @@ public class EmailSubmission {
     
     private String ipAddress;
     
+    private String source = "landing";
+    
     public Date getFormattedDate() {
         return new Date(creationDate);
     }
