@@ -1,4 +1,4 @@
-package com.emailcollector.landing;
+package com.emailcollector.landing.Controller;
 
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +8,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import com.emailcollector.landing.EmailRepository;
+import com.emailcollector.landing.EmailSubmission;
+
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
