@@ -1,4 +1,4 @@
-package com.emailcollector.landing;
+package com.emailcollector.landing.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

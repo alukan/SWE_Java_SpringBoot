@@ -1,6 +1,7 @@
-package com.emailcollector.landing;
+package com.emailcollector.landing.service;
 
-import com.emailcollector.landing.EmailSubmission;
+import com.emailcollector.landing.model.EmailSubmission;
+import com.emailcollector.landing.repository.EmailRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;

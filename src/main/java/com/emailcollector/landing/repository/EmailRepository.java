@@ -1,5 +1,6 @@
-package com.emailcollector.landing;
+package com.emailcollector.landing.repository;
 
+import com.emailcollector.landing.model.EmailSubmission;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
