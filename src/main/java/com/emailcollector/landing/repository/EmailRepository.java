@@ -1,31 +1,12 @@
 package com.emailcollector.landing.repository;
 
 import com.emailcollector.landing.model.EmailSubmission;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Optional;
 
 @Repository
-public class EmailRepository {
-
-    private final List<EmailSubmission> submissions = new ArrayList<>();
-
-    public void save(EmailSubmission submission) {
-        submissions.add(submission);
-    }
-
-    public List<EmailSubmission> findAll() {
-        return submissions;
-    }
-    
-    public Optional<EmailSubmission> findByEmail(String email) {
-        return submissions.stream()
-                .filter(submission -> submission.getEmail().equals(email))
-                .findFirst();
-    }
-    
-    public int count() {
-        return submissions.size();
-    }
+public interface EmailRepository extends JpaRepository<EmailSubmission, Long> {
+    Optional<EmailSubmission> findByEmail(String email);
 }
