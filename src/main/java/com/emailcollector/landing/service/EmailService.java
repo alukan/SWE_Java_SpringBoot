@@ -30,7 +30,7 @@ public class EmailService {
     }
     
     public int getSubmissionCount() {
-        return emailRepository.count();
+        return (int) emailRepository.count();
     }
     
     public Optional<EmailSubmission> findByEmail(String email) {
