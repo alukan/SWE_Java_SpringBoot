@@ -1,4 +1,4 @@
-package com.emailcollector.landing.Controller;
+package com.emailcollector.landing.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.emailcollector.landing.EmailService;
-import com.emailcollector.landing.EmailSubmission;
+import com.emailcollector.landing.service.EmailService;
+import com.emailcollector.landing.model.EmailSubmission;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +24,12 @@ import java.util.Map;
 @RequestMapping("/api")
 public class EmailRestController {
 
+    private final EmailService emailService;
+
     @Autowired
-    private EmailService emailService;
+    public EmailRestController(EmailService emailService) {
+        this.emailService = emailService;
+    }
     
     @PostMapping("/email")
     public ResponseEntity<?> addEmail(@Valid @RequestBody EmailSubmission emailSubmission, 
