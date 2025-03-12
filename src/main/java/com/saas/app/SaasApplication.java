@@ -1,13 +1,13 @@
-package com.emailcollector.landing;
+package com.saas.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LandingApplication {
+public class SaasApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LandingApplication.class, args);
+		SpringApplication.run(SaasApplication.class, args);
 	}
 
 }

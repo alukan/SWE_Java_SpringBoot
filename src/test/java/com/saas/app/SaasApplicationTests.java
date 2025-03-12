@@ -1,10 +1,10 @@
-package com.emailcollector.landing;
+package com.saas.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class LandingApplicationTests {
+class SaasApplicationTests {
 
 	@Test
 	void contextLoads() {
