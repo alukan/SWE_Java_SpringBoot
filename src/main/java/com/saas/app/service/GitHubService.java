@@ -197,4 +197,18 @@ public class GitHubService {
             throw new IllegalArgumentException("Limit must be between 1 and 100");
         }
     }
+
+    /**
+     * Validates if a repository exists and is accessible
+     */
+    public boolean validateRepository(String owner, String repo) {
+        validateParams(owner, repo, 1);  // Use minimum limit just for validation
+        try {
+            getRepository(owner, repo);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Repository validation failed for {}/{}: {}", owner, repo, e.getMessage());
+            return false;
+        }
+    }
 }
