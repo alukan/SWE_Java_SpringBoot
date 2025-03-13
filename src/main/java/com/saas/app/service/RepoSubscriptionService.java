@@ -4,29 +4,69 @@ import com.saas.app.exception.SubscriptionException;
 import com.saas.app.model.RepoSubscription;
 import com.saas.app.model.GitHubRepository;
 import com.saas.app.repository.RepoSubscriptionRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class RepoSubscriptionService {
     
     private static final Logger logger = LoggerFactory.getLogger(RepoSubscriptionService.class);
-    private static final Pattern EMAIL_PATTERN = 
-        Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     
-    @Autowired
-    private RepoSubscriptionRepository subscriptionRepository;
+    private final RepoSubscriptionRepository subscriptionRepository;
+    private final RepoService repoService;
+    private final Validator validator;
     
-    @Autowired
-    private RepoService repoService;
+    public RepoSubscriptionService(RepoSubscriptionRepository subscriptionRepository, 
+                                 RepoService repoService,
+                                 Validator validator) {
+        this.subscriptionRepository = subscriptionRepository;
+        this.repoService = repoService;
+        this.validator = validator;
+    }
+    
+    /**
+     * Validates an email address using Jakarta validation
+     * 
+     * @param email Email address to validate
+     * @throws IllegalArgumentException if the email is invalid
+     */
+    private void validateEmail(String email) {
+        if (email == null) {
+            throw new IllegalArgumentException("Email address cannot be null");
+        }
+        
+        // Create an anonymous class to validate the email
+        class EmailContainer {
+            @Email(message = "Invalid email format")
+            @NotBlank(message = "Email is required")
+            String value;
+            
+            public EmailContainer(String email) {
+                this.value = email;
+            }
+        }
+        
+        EmailContainer container = new EmailContainer(email);
+        Set<ConstraintViolation<EmailContainer>> violations = validator.validate(container);
+        
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
     
     /**
      * Subscribe a user to repository activity
@@ -40,9 +80,7 @@ public class RepoSubscriptionService {
      */
     @Transactional
     public RepoSubscription subscribe(String email, String owner, String repoName) {
-        if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
-            throw new IllegalArgumentException("Invalid email address");
-        }
+        validateEmail(email);
         
         try {
             GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
@@ -75,6 +113,8 @@ public class RepoSubscriptionService {
      */
     @Transactional
     public void unsubscribe(String email, String owner, String repoName) {
+        validateEmail(email);
+        
         try {
             GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
             
@@ -98,10 +138,7 @@ public class RepoSubscriptionService {
      * @throws IllegalArgumentException if the email is invalid
      */
     public List<RepoSubscription> getUserSubscriptions(String email) {
-        if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
-            throw new IllegalArgumentException("Invalid email address");
-        }
-        
+        validateEmail(email);
         return subscriptionRepository.findByEmail(email);
     }
     
@@ -134,6 +171,8 @@ public class RepoSubscriptionService {
      */
     @Transactional
     public RepoSubscription updateNotificationStatus(String email, String owner, String repoName, boolean enabled) {
+        validateEmail(email);
+        
         try {
             GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
             

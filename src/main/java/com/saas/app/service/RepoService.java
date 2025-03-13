@@ -18,11 +18,14 @@ public class RepoService {
     
     private static final Logger logger = LoggerFactory.getLogger(RepoService.class);
     
+    private final RepositoryRepository repositoryRepository;
+    private final GitHubService gitHubService;
+
     @Autowired
-    private RepositoryRepository repositoryRepository;
-    
-    @Autowired
-    private GitHubService gitHubService;
+    public RepoService(RepositoryRepository repositoryRepository, GitHubService gitHubService) {
+        this.repositoryRepository = repositoryRepository;
+        this.gitHubService = gitHubService;
+    }
     
     /**
      * Gets or creates a repository by owner and name

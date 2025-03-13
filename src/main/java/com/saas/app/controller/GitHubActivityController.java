@@ -14,8 +14,12 @@ public class GitHubActivityController {
     
     private static final Logger logger = LoggerFactory.getLogger(GitHubActivityController.class);
     
+    private final GitHubService gitHubService;
+
     @Autowired
-    private GitHubService gitHubService;
+    public GitHubActivityController(GitHubService gitHubService) {
+        this.gitHubService = gitHubService;
+    }
     
     @GetMapping("/activities/{owner}/{repo}")
     public ResponseEntity<?> getRepositoryActivities(

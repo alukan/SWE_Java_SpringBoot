@@ -1,6 +1,9 @@
 package com.saas.app.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,13 +23,17 @@ public class RepoSubscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @NotBlank(message = "Email is required")
+    @Email(message = "Please provide a valid email address")
     @Column(nullable = false)
     private String email;
     
+    @NotNull(message = "Repository is required")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "repository_id", nullable = false)
     private GitHubRepository repository;
     
+    @NotNull(message = "Subscription date is required")
     @Column(name = "subscribed_at", nullable = false)
     private ZonedDateTime subscribedAt;
     

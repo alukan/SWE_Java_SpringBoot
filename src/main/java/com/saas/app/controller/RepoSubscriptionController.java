@@ -13,14 +13,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.constraints.NotBlank;
+
 @RestController
 @RequestMapping("/api/subscription")
 public class RepoSubscriptionController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(RepoSubscriptionController.class);
-    
+    private final RepoSubscriptionService subscriptionService;
+
     @Autowired
-    private RepoSubscriptionService subscriptionService;
+    public RepoSubscriptionController(RepoSubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
 
     /**
      * Subscribe to a repository's activity
@@ -28,10 +33,10 @@ public class RepoSubscriptionController {
      */
     @PostMapping("/repository/{owner}/{repo}")
     public ResponseEntity<?> subscribeToRepository(
-            @PathVariable String owner,
-            @PathVariable String repo,
-            @RequestParam String email) {
-        
+            @PathVariable @NotBlank(message = "Owner name is required") String owner,
+            @PathVariable @NotBlank(message = "Repository name is required") String repo,
+            @RequestParam @jakarta.validation.constraints.Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email) {
+
         try {
             logger.info("Subscribing {} to repository {}/{}", email, owner, repo);
             RepoSubscription subscription = subscriptionService.subscribe(email, owner, repo);
@@ -39,21 +44,21 @@ public class RepoSubscriptionController {
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid subscription parameters: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         } catch (SubscriptionException e) {
             logger.warn("Subscription error: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error during subscription", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
-    
+
     /**
      * Unsubscribe from a repository's activity
      * Uses path variables for repository info and email as a request parameter
@@ -62,8 +67,8 @@ public class RepoSubscriptionController {
     public ResponseEntity<?> unsubscribeFromRepository(
             @PathVariable String owner,
             @PathVariable String repo,
-            @RequestParam String email) {
-        
+            @RequestParam @jakarta.validation.constraints.Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email) {
+
         try {
             logger.info("Unsubscribing {} from repository {}/{}", email, owner, repo);
             subscriptionService.unsubscribe(email, owner, repo);
@@ -71,18 +76,19 @@ public class RepoSubscriptionController {
         } catch (SubscriptionException e) {
             logger.warn("Unsubscription error: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error during unsubscription", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
-    
+
     @GetMapping("/repository")
-    public ResponseEntity<?> getUserSubscriptions(@RequestParam String email) {
+    public ResponseEntity<?> getUserSubscriptions(
+            @RequestParam @jakarta.validation.constraints.Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email) {
         try {
             logger.info("Fetching subscriptions for user {}", email);
             List<RepoSubscription> subscriptions = subscriptionService.getUserSubscriptions(email);
@@ -90,21 +96,21 @@ public class RepoSubscriptionController {
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid email address: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error fetching user subscriptions", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
-    
+
     @GetMapping("/repository/{owner}/{repo}")
     public ResponseEntity<?> getRepositorySubscriptions(
             @PathVariable String owner,
             @PathVariable String repo) {
-        
+
         try {
             logger.info("Fetching subscriptions for repository {}/{}", owner, repo);
             List<RepoSubscription> subscriptions = subscriptionService.getRepositorySubscriptions(owner, repo);
@@ -112,8 +118,8 @@ public class RepoSubscriptionController {
         } catch (Exception e) {
             logger.error("Unexpected error fetching repository subscriptions", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
 
@@ -121,8 +127,8 @@ public class RepoSubscriptionController {
     public ResponseEntity<?> enableNotifications(
             @PathVariable String owner,
             @PathVariable String repo,
-            @RequestParam String email) {
-        
+            @RequestParam @jakarta.validation.constraints.Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email) {
+
         try {
             logger.info("Enabling notifications for {} on repository {}/{}", email, owner, repo);
             RepoSubscription subscription = subscriptionService.updateNotificationStatus(email, owner, repo, true);
@@ -130,13 +136,13 @@ public class RepoSubscriptionController {
         } catch (SubscriptionException e) {
             logger.warn("Notification update error: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error updating notifications", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
 
@@ -144,8 +150,8 @@ public class RepoSubscriptionController {
     public ResponseEntity<?> disableNotifications(
             @PathVariable String owner,
             @PathVariable String repo,
-            @RequestParam String email) {
-        
+            @RequestParam @jakarta.validation.constraints.Email(message = "Invalid email format") @NotBlank(message = "Email is required") String email) {
+
         try {
             logger.info("Disabling notifications for {} on repository {}/{}", email, owner, repo);
             RepoSubscription subscription = subscriptionService.updateNotificationStatus(email, owner, repo, false);
@@ -153,13 +159,13 @@ public class RepoSubscriptionController {
         } catch (SubscriptionException e) {
             logger.warn("Notification update error: {}", e.getMessage());
             return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", e.getMessage()));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error updating notifications", e);
             return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred"));
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
 }
