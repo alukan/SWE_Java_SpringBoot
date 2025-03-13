@@ -47,9 +47,8 @@ public class GitHubService {
         }
     }
 
-    public List<GitHubActivity> getCommits(String owner, String repo, int limit) {
-        validateParams(owner, repo, limit);
-        GHRepository repository = getRepository(owner, repo);
+    public List<GitHubActivity> getCommits(GHRepository repository, int limit) {
+        validateParams(repository.getOwnerName(), repository.getName(), limit);
 
         return repository.listCommits()
                 .withPageSize(limit)
@@ -73,9 +72,13 @@ public class GitHubService {
                 .collect(Collectors.toList());
     }
 
-    public List<GitHubActivity> getPullRequests(String owner, String repo, int limit) {
+    public List<GitHubActivity> getCommits(String owner, String repo, int limit) {
         validateParams(owner, repo, limit);
-        GHRepository repository = getRepository(owner, repo);
+        return getCommits(getRepository(owner, repo), limit);
+    }
+
+    public List<GitHubActivity> getPullRequests(GHRepository repository, int limit) {
+        validateParams(repository.getOwnerName(), repository.getName(), limit);
 
         try {
             return repository.getPullRequests(GHIssueState.ALL)
@@ -98,14 +101,18 @@ public class GitHubService {
                     .filter(a -> a != null)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            logger.error("Failed to fetch pull requests for {}/{}", owner, repo, e);
+            logger.error("Failed to fetch pull requests for {}/{}", repository.getOwnerName(), repository.getName(), e);
             throw new GitHubApiException("Failed to fetch pull requests", e);
         }
     }
 
-    public List<GitHubActivity> getIssues(String owner, String repo, int limit) {
+    public List<GitHubActivity> getPullRequests(String owner, String repo, int limit) {
         validateParams(owner, repo, limit);
-        GHRepository repository = getRepository(owner, repo);
+        return getPullRequests(getRepository(owner, repo), limit);
+    }
+
+    public List<GitHubActivity> getIssues(GHRepository repository, int limit) {
+        validateParams(repository.getOwnerName(), repository.getName(), limit);
 
         try {
             return repository.getIssues(GHIssueState.ALL)
@@ -129,14 +136,18 @@ public class GitHubService {
                     .filter(a -> a != null)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            logger.error("Failed to fetch issues for {}/{}", owner, repo, e);
+            logger.error("Failed to fetch issues for {}/{}", repository.getOwnerName(), repository.getName(), e);
             throw new GitHubApiException("Failed to fetch issues", e);
         }
     }
 
-    public List<GitHubActivity> getReleases(String owner, String repo, int limit) {
+    public List<GitHubActivity> getIssues(String owner, String repo, int limit) {
         validateParams(owner, repo, limit);
-        GHRepository repository = getRepository(owner, repo);
+        return getIssues(getRepository(owner, repo), limit);
+    }
+
+    public List<GitHubActivity> getReleases(GHRepository repository, int limit) {
+        validateParams(repository.getOwnerName(), repository.getName(), limit);
 
         try {
             return repository.listReleases()
@@ -165,18 +176,25 @@ public class GitHubService {
                     .filter(a -> a != null)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            logger.error("Failed to fetch releases for {}/{}", owner, repo, e);
+            logger.error("Failed to fetch releases for {}/{}", repository.getOwnerName(), repository.getName(), e);
             throw new GitHubApiException("Failed to fetch releases", e);
         }
     }
 
+    public List<GitHubActivity> getReleases(String owner, String repo, int limit) {
+        validateParams(owner, repo, limit);
+        return getReleases(getRepository(owner, repo), limit);
+    }
+
     public List<GitHubActivity> getRepositoryActivities(String owner, String repo, int limit) {
         validateParams(owner, repo, limit);
-
-        List<GitHubActivity> commits = getCommits(owner, repo, limit);
-        List<GitHubActivity> prs = getPullRequests(owner, repo, limit);
-        List<GitHubActivity> issues = getIssues(owner, repo, limit);
-        List<GitHubActivity> releases = getReleases(owner, repo, limit);
+        
+        GHRepository repository = getRepository(owner, repo);
+        
+        List<GitHubActivity> commits = getCommits(repository, limit);
+        List<GitHubActivity> prs = getPullRequests(repository, limit);
+        List<GitHubActivity> issues = getIssues(repository, limit);
+        List<GitHubActivity> releases = getReleases(repository, limit);
 
         // Combine and sort by date (newest first)
         return Stream.of(commits, prs, issues, releases)
