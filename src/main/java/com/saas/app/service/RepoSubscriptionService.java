@@ -25,6 +25,16 @@ public class RepoSubscriptionService {
     @Autowired
     private GitHubService gitHubService;
     
+    /**
+     * Subscribe a user to repository activity
+     * 
+     * @param email User's email address
+     * @param owner Repository owner
+     * @param repoName Repository name
+     * @return The created subscription
+     * @throws IllegalArgumentException if the email is invalid
+     * @throws SubscriptionException if the repository is invalid or user is already subscribed
+     */
     @Transactional
     public RepoSubscription subscribe(String email, String owner, String repoName) {
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
@@ -48,6 +58,14 @@ public class RepoSubscriptionService {
         return subscription;
     }
     
+    /**
+     * Unsubscribe a user from repository activity
+     * 
+     * @param email User's email address
+     * @param owner Repository owner
+     * @param repoName Repository name
+     * @throws SubscriptionException if the user is not subscribed to the repository
+     */
     @Transactional
     public void unsubscribe(String email, String owner, String repoName) {
         if (!subscriptionRepository.existsByEmailAndOwnerAndRepoName(email, owner, repoName)) {
@@ -58,6 +76,13 @@ public class RepoSubscriptionService {
         logger.info("User {} unsubscribed from repository {}/{}", email, owner, repoName);
     }
     
+    /**
+     * Get all subscriptions for a user
+     * 
+     * @param email User's email address
+     * @return List of repository subscriptions
+     * @throws IllegalArgumentException if the email is invalid
+     */
     public List<RepoSubscription> getUserSubscriptions(String email) {
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
             throw new IllegalArgumentException("Invalid email address");
@@ -66,13 +91,21 @@ public class RepoSubscriptionService {
         return subscriptionRepository.findByEmail(email);
     }
     
+    /**
+     * Get all subscriptions for a repository
+     * 
+     * @param owner Repository owner
+     * @param repoName Repository name
+     * @return List of user subscriptions
+     */
     public List<RepoSubscription> getRepositorySubscriptions(String owner, String repoName) {
         return subscriptionRepository.findByOwnerAndRepoName(owner, repoName);
     }
 
     /**
      * Update notification status for a subscription
-     * @param email User's email
+     * 
+     * @param email User's email address
      * @param owner Repository owner
      * @param repoName Repository name
      * @param enabled Whether notifications should be enabled
