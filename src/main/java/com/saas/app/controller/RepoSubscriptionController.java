@@ -116,4 +116,50 @@ public class RepoSubscriptionController {
                 .body(Map.of("error", "An unexpected error occurred"));
         }
     }
+
+    @PutMapping("/repository/{owner}/{repo}/notifications/enable")
+    public ResponseEntity<?> enableNotifications(
+            @PathVariable String owner,
+            @PathVariable String repo,
+            @RequestParam String email) {
+        
+        try {
+            logger.info("Enabling notifications for {} on repository {}/{}", email, owner, repo);
+            RepoSubscription subscription = subscriptionService.updateNotificationStatus(email, owner, repo, true);
+            return ResponseEntity.ok(subscription);
+        } catch (SubscriptionException e) {
+            logger.warn("Notification update error: {}", e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Unexpected error updating notifications", e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred"));
+        }
+    }
+
+    @PutMapping("/repository/{owner}/{repo}/notifications/disable")
+    public ResponseEntity<?> disableNotifications(
+            @PathVariable String owner,
+            @PathVariable String repo,
+            @RequestParam String email) {
+        
+        try {
+            logger.info("Disabling notifications for {} on repository {}/{}", email, owner, repo);
+            RepoSubscription subscription = subscriptionService.updateNotificationStatus(email, owner, repo, false);
+            return ResponseEntity.ok(subscription);
+        } catch (SubscriptionException e) {
+            logger.warn("Notification update error: {}", e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Unexpected error updating notifications", e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred"));
+        }
+    }
 }

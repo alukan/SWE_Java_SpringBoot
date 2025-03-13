@@ -69,4 +69,32 @@ public class RepoSubscriptionService {
     public List<RepoSubscription> getRepositorySubscriptions(String owner, String repoName) {
         return subscriptionRepository.findByOwnerAndRepoName(owner, repoName);
     }
+
+    /**
+     * Update notification status for a subscription
+     * @param email User's email
+     * @param owner Repository owner
+     * @param repoName Repository name
+     * @param enabled Whether notifications should be enabled
+     * @return The updated subscription
+     * @throws SubscriptionException if the subscription doesn't exist
+     */
+    @Transactional
+    public RepoSubscription updateNotificationStatus(String email, String owner, String repoName, boolean enabled) {
+        RepoSubscription subscription = subscriptionRepository
+            .findByEmailAndOwnerAndRepoName(email, owner, repoName)
+            .orElseThrow(() -> new SubscriptionException("No subscription found for " + owner + "/" + repoName));
+        
+        subscription.setNotificationsEnabled(enabled);
+        
+        // If enabling notifications, reset the last notification time
+        if (enabled) {
+            subscription.setLastNotificationAt(null);
+        }
+        
+        logger.info("Notifications {} for user {} on repository {}/{}",
+                   enabled ? "enabled" : "disabled", email, owner, repoName);
+        
+        return subscriptionRepository.save(subscription);
+    }
 }

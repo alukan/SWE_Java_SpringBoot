@@ -32,10 +32,25 @@ public class RepoSubscription {
     @Column(name = "subscribed_at", nullable = false)
     private ZonedDateTime subscribedAt;
     
+    @Column(name = "notifications_enabled", nullable = false)
+    private boolean notificationsEnabled = false;
+    
+    @Column(name = "last_notification_at")
+    private ZonedDateTime lastNotificationAt;
+    
     public RepoSubscription(String email, String owner, String repoName) {
         this.email = email;
         this.owner = owner;
         this.repoName = repoName;
         this.subscribedAt = ZonedDateTime.now();
+        this.notificationsEnabled = true;
+    }
+    
+    public RepoSubscription(String email, String owner, String repoName, boolean notificationsEnabled) {
+        this.email = email;
+        this.owner = owner;
+        this.repoName = repoName;
+        this.subscribedAt = ZonedDateTime.now();
+        this.notificationsEnabled = notificationsEnabled;
     }
 }
