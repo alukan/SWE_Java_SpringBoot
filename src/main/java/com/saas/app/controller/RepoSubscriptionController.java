@@ -123,7 +123,7 @@ public class RepoSubscriptionController {
         }
     }
 
-    @PutMapping("/repository/{owner}/{repo}/notifications/enable")
+    @PatchMapping("/repository/{owner}/{repo}/notifications/enable")
     public ResponseEntity<?> enableNotifications(
             @PathVariable String owner,
             @PathVariable String repo,
@@ -146,7 +146,7 @@ public class RepoSubscriptionController {
         }
     }
 
-    @PutMapping("/repository/{owner}/{repo}/notifications/disable")
+    @PatchMapping("/repository/{owner}/{repo}/notifications/disable")
     public ResponseEntity<?> disableNotifications(
             @PathVariable String owner,
             @PathVariable String repo,
