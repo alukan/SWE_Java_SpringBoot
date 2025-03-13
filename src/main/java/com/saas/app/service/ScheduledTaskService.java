@@ -22,11 +22,16 @@ public class ScheduledTaskService {
 
     private final RepoSubscriptionRepository subscriptionRepository;
     private final RepoService repoService;
+    private final NotificationService notificationService;
 
     @Autowired
-    public ScheduledTaskService(RepoSubscriptionRepository subscriptionRepository, RepoService repoService) {
+    public ScheduledTaskService(
+            RepoSubscriptionRepository subscriptionRepository,
+            RepoService repoService,
+            NotificationService notificationService) {
         this.subscriptionRepository = subscriptionRepository;
         this.repoService = repoService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -75,8 +80,9 @@ public class ScheduledTaskService {
                             subscriptionsToNotify.size(), repository.getOwner(), repository.getName());
 
                     for (RepoSubscription subscription : subscriptionsToNotify) {
-                        logger.info("Would notify user {} about new activity in {}/{}",
-                                subscription.getEmail(), repository.getOwner(), repository.getName());
+                        String message = String.format("New activity detected in %s/%s", 
+                                repository.getOwner(), repository.getName());
+                        notificationService.createNotification(subscription, message);
                     }
                 } else {
                     logger.debug("No new activity in repository {}/{}",
