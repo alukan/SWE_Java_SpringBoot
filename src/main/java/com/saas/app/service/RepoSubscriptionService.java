@@ -2,6 +2,7 @@ package com.saas.app.service;
 
 import com.saas.app.exception.SubscriptionException;
 import com.saas.app.model.RepoSubscription;
+import com.saas.app.model.GitHubRepository;
 import com.saas.app.repository.RepoSubscriptionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class RepoSubscriptionService {
@@ -23,7 +26,7 @@ public class RepoSubscriptionService {
     private RepoSubscriptionRepository subscriptionRepository;
     
     @Autowired
-    private GitHubService gitHubService;
+    private RepoService repoService;
     
     /**
      * Subscribe a user to repository activity
@@ -42,20 +45,24 @@ public class RepoSubscriptionService {
         }
         
         try {
-            gitHubService.validateRepository(owner, repoName);
-        } catch (Exception e) {
+            GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
+            
+            Optional<RepoSubscription> existingSubscription = 
+                subscriptionRepository.findByEmailAndRepository(email, repository);
+            
+            if (existingSubscription.isPresent()) {
+                throw new SubscriptionException("Already subscribed to " + owner + "/" + repoName);
+            }
+    
+            RepoSubscription subscription = new RepoSubscription(email, repository);
+            subscription = subscriptionRepository.save(subscription);
+            
+            logger.info("User {} subscribed to repository {}/{}", email, owner, repoName);
+            return subscription;
+            
+        } catch (IllegalArgumentException e) {
             throw new SubscriptionException("Invalid repository: " + owner + "/" + repoName);
         }
-    
-        if (subscriptionRepository.existsByEmailAndOwnerAndRepoName(email, owner, repoName)) {
-            throw new SubscriptionException("Already subscribed to " + owner + "/" + repoName);
-        }
-
-        RepoSubscription subscription = new RepoSubscription(email, owner, repoName);
-        subscription = subscriptionRepository.save(subscription);
-        
-        logger.info("User {} subscribed to repository {}/{}", email, owner, repoName);
-        return subscription;
     }
     
     /**
@@ -68,12 +75,19 @@ public class RepoSubscriptionService {
      */
     @Transactional
     public void unsubscribe(String email, String owner, String repoName) {
-        if (!subscriptionRepository.existsByEmailAndOwnerAndRepoName(email, owner, repoName)) {
-            throw new SubscriptionException("Not subscribed to " + owner + "/" + repoName);
+        try {
+            GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
+            
+            if (!subscriptionRepository.existsByEmailAndRepository(email, repository)) {
+                throw new SubscriptionException("Not subscribed to " + owner + "/" + repoName);
+            }
+            
+            subscriptionRepository.deleteByEmailAndRepository(email, repository);
+            logger.info("User {} unsubscribed from repository {}/{}", email, owner, repoName);
+            
+        } catch (IllegalArgumentException e) {
+            throw new SubscriptionException("Invalid repository: " + owner + "/" + repoName);
         }
-        
-        subscriptionRepository.deleteByEmailAndOwnerAndRepoName(email, owner, repoName);
-        logger.info("User {} unsubscribed from repository {}/{}", email, owner, repoName);
     }
     
     /**
@@ -99,9 +113,15 @@ public class RepoSubscriptionService {
      * @return List of user subscriptions
      */
     public List<RepoSubscription> getRepositorySubscriptions(String owner, String repoName) {
-        return subscriptionRepository.findByOwnerAndRepoName(owner, repoName);
+        try {
+            GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
+            return subscriptionRepository.findByRepository(repository);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Failed to get subscriptions for invalid repository {}/{}", owner, repoName);
+            return List.of();
+        }
     }
-
+    
     /**
      * Update notification status for a subscription
      * 
@@ -114,20 +134,50 @@ public class RepoSubscriptionService {
      */
     @Transactional
     public RepoSubscription updateNotificationStatus(String email, String owner, String repoName, boolean enabled) {
-        RepoSubscription subscription = subscriptionRepository
-            .findByEmailAndOwnerAndRepoName(email, owner, repoName)
-            .orElseThrow(() -> new SubscriptionException("No subscription found for " + owner + "/" + repoName));
-        
-        subscription.setNotificationsEnabled(enabled);
-        
-        // If enabling notifications, reset the last notification time
-        if (enabled) {
-            subscription.setLastNotificationAt(null);
+        try {
+            GitHubRepository repository = repoService.getOrCreateRepository(owner, repoName);
+            
+            RepoSubscription subscription = subscriptionRepository
+                .findByEmailAndRepository(email, repository)
+                .orElseThrow(() -> new SubscriptionException("No subscription found for " + owner + "/" + repoName));
+            
+            subscription.setNotificationsEnabled(enabled);
+            
+            // If enabling notifications, reset the last notification time
+            if (enabled) {
+                subscription.setLastNotificationAt(null);
+            }
+            
+            logger.info("Notifications {} for user {} on repository {}/{}",
+                       enabled ? "enabled" : "disabled", email, owner, repoName);
+            
+            return subscriptionRepository.save(subscription);
+            
+        } catch (IllegalArgumentException e) {
+            throw new SubscriptionException("Invalid repository: " + owner + "/" + repoName);
         }
-        
-        logger.info("Notifications {} for user {} on repository {}/{}",
-                   enabled ? "enabled" : "disabled", email, owner, repoName);
-        
-        return subscriptionRepository.save(subscription);
+    }
+    
+    /**
+     * Get subscriptions that need notifications
+     * 
+     * @return List of subscriptions needing notification
+     */
+    public List<RepoSubscription> getSubscriptionsNeedingNotification() {
+        return subscriptionRepository.findByNotificationsEnabledTrue()
+                .stream()
+                .filter(RepoSubscription::needsNotification)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Mark a subscription as notified
+     * 
+     * @param subscription The subscription to mark
+     */
+    @Transactional
+    public void markNotified(RepoSubscription subscription) {
+        subscription.markNotified();
+        subscriptionRepository.save(subscription);
     }
 }

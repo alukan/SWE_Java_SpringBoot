@@ -1,6 +1,7 @@
 package com.saas.app.repository;
 
 import com.saas.app.model.RepoSubscription;
+import com.saas.app.model.GitHubRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,11 +13,13 @@ public interface RepoSubscriptionRepository extends JpaRepository<RepoSubscripti
     
     List<RepoSubscription> findByEmail(String email);
     
-    Optional<RepoSubscription> findByEmailAndOwnerAndRepoName(String email, String owner, String repoName);
+    Optional<RepoSubscription> findByEmailAndRepository(String email, GitHubRepository repository);
     
-    boolean existsByEmailAndOwnerAndRepoName(String email, String owner, String repoName);
+    boolean existsByEmailAndRepository(String email, GitHubRepository repository);
     
-    void deleteByEmailAndOwnerAndRepoName(String email, String owner, String repoName);
+    void deleteByEmailAndRepository(String email, GitHubRepository repository);
     
-    List<RepoSubscription> findByOwnerAndRepoName(String owner, String repoName);
+    List<RepoSubscription> findByRepository(GitHubRepository repository);
+    
+    List<RepoSubscription> findByNotificationsEnabledTrue();
 }
