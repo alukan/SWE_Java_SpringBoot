@@ -26,6 +26,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("com.h2database:h2")
 	runtimeOnly("com.h2database:h2")
+	
+	// GitHub API Client
+	implementation("org.kohsuke:github-api:1.316")
+
+	// Environment variable loading from .env files
+	implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
